@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Support Agent</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+
+        #chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        #chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .user {
+            align-self: flex-end;
+            background: #007bff;
+            color: white;
+            border-radius: 10px 10px 0 10px;
+        }
+
+        .bot {
+            align-self: flex-start;
+            background: #e5e5e5;
+            color: black;
+            border-radius: 10px 10px 10px 0;
+        }
+
+        #chat-form {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            background: white;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        #send-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #send-button:hover {
+            background: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+        <form id="chat-form">
+            <input type="text" id="user-input" placeholder="Message AI Support Agent..." required>
+            <button type="submit" id="send-button">Send</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let selectedCategory = "";
+            let selectedSymptom = "";
+            let rejectedCategories = [];
+            let currentStep = "categorySelection";
+
+            document.getElementById("chat-form").addEventListener("submit", async function (event) {
+                event.preventDefault();
+                let userMessage = document.getElementById("user-input").value.trim();
+                if (!userMessage) return;
+
+                addMessage(userMessage, "user");
+                document.getElementById("user-input").value = "";
+
+                if (currentStep === "categorySelection") {
+                    await fetchCategory(userMessage, rejectedCategories);
+                } else if (currentStep === "confirmCategory") {
+                    handleCategoryConfirmation(userMessage);
+                } else if (currentStep === "selectSymptom") {
+                    handleSymptomSelection(userMessage);
+                }
+            });
+
+            async function fetchCategory(userMessage, rejectedCategories) {
+                try {
+                    const response = await fetch("/api/categorize", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ user_description: userMessage, rejected_categories: rejectedCategories })
+                    });
+
+                    if (!response.ok) throw new Error("Server error");
+
+                    const data = await response.json();
+                    selectedCategory = data.matched_category;
+
+                    addMessage(`Your issue seems to belong to: **${selectedCategory}**. Do you confirm? (Y/N)`, "bot");
+
+                    currentStep = "confirmCategory";
+                    document.getElementById("user-input").setAttribute("placeholder", "Enter Y or N...");
+                } catch (error) {
+                    console.error("Error:", error);
+                    addMessage("Error processing request.", "bot");
+                }
+            }
+
+            function handleCategoryConfirmation(userInput) {
+                userInput = userInput.toUpperCase();
+                
+                if (userInput === "Y") {
+                    addMessage(`You confirmed: ${selectedCategory}`, "user");
+                    fetchSymptoms(selectedCategory);
+                } else if (userInput === "N") {
+                    rejectedCategories.push(selectedCategory);
+                    addMessage("Looking for the next best match...", "bot");
+                    fetchCategory(selectedCategory, rejectedCategories);
+                } else {
+                    addMessage("Invalid input. Please enter Y or N.", "bot");
+                }
+            }
+
+            async function fetchSymptoms(category) {
+                try {
+                    const response = await fetch(`/api/symptoms?category=${encodeURIComponent(category)}`);
+                    if (!response.ok) throw new Error("Server error");
+
+                    const data = await response.json();
+                    let symptomList = `<div class='message bot'>Here are the common symptoms for **${category}**. Type the number of the symptom that is the closest match to your symptom or describe further:<br>`;
+                    
+                    data.symptoms.forEach((symptom, index) => {
+                        symptomList += `${index + 1}. ${symptom}<br>`;
+                    });
+                    symptomList += `</div>`;
+
+                    addMessage(symptomList, "bot");
+
+                    currentStep = "selectSymptom";
+                    document.getElementById("user-input").setAttribute("placeholder", "Enter symptom number or describe further...");
+                } catch (error) {
+                    console.error("Error:", error);
+                    addMessage("Error fetching symptoms.", "bot");
+                }
+            }
+
+            function handleSymptomSelection(userInput) {
+                if (/^\d+$/.test(userInput)) {
+                    let index = parseInt(userInput) - 1;
+                    selectedSymptom = data.symptoms[index]; // Store selected symptom
+                    addMessage(`You selected: ${selectedSymptom}`, "user");
+                    fetchCauses(selectedSymptom);
+                } else {
+                    addMessage(`You refined symptom: ${userInput}`, "user");
+                    fetchCauses(userInput); // Treat as user-defined symptom
+                }
+            }
+
+            async function fetchCauses(symptom) {
+                try {
+                    const response = await fetch(`/api/causes?symptom=${encodeURIComponent(symptom)}`);
+                    if (!response.ok) throw new Error("Server error");
+
+                    const data = await response.json();
+                    let causesList = `<div class='message bot'>Possible causes for **${symptom}**:<br>`;
+                    
+                    data.possibleCauses.forEach((cause, index) => {
+                        causesList += `${index + 1}. ${cause}<br>`;
+                    });
+                    causesList += `</div>`;
+
+                    addMessage(causesList, "bot");
+                } catch (error) {
+                    console.error("Error:", error);
+                    addMessage("Error fetching causes.", "bot");
+                }
+            }
+
+            function addMessage(text, role) {
+                const chatBox = document.getElementById("chat-box");
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("message", role);
+                messageDiv.innerHTML = text;
+                chatBox.appendChild(messageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+body { font-family: Arial, sans-serif; padding: 20px; }
+#chat-box { width: 100%; max-width: 600px; height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+#chat-form { display: flex; }
+#user-input { flex: 1; padding: 10px; }
+button { padding: 10px; }
+.message { margin: 10px 0; }
+.user { text-align: right; font-weight: bold; color: blue; }
+.bot { text-align: left; font-weight: bold; color: green; }
