@@ -1,0 +1,370 @@
+﻿Symptom Category,Common Symptoms,Possible Causes,Recommended Actions,How to detect
+UI Performance Issues,Slow loading times,Server overload ,Increase the max memory in the Jvm startup,Extract the usage using Nmon report or any other commands like top
+UI Performance Issues,Crashes or freezes,Memory leaks,Analyse the code for possible memory leaks,Code analysis
+UI Performance Issues,Crashes or freezes,Issue in load balancing in case of multiple node configuration,Check the loadbalancer related configurations,Mostly handled separately from the application
+UI Performance Issues,Crashes or freezes,Network issues ,Check the ports,Run the Netstat command
+Batch Performance Issues,Elongated Job execution time - Job hanging,High cost SQLs,SQL tuning,Extract Oracle reports
+Batch Performance Issues,Elongated Job execution time - Job hanging,Index are stale,"Rebuilding oracle statistics
+Adding or removing indexes",Extract Oracle reports
+Batch Performance Issues,Elongated Job execution time - Job hanging,Waiting or locked threads,Code fix,Generate Heap and Thread dump
+Batch Performance Issues,Elongated Job execution time - Job hanging,SQL plan got changed,Profile the SQL plan,Generate Explain plan and also check the V$SQL PLAN History
+Batch Performance Issues,Recurring Pricing is long running ,Due to some queries in a function invoked in the process,Need to find the purpose of it and optimize the queries,Extract oracle reports.
+Batch Performance Issues,Batch job failed-Value larger than precision not allowed for this column,Compare the column datatypes and length of the data,find the affected column and check the datatype details ,
+Batch Performance Issues,Elongated Job execution time - Job hanging,JVM hung,GC and JVM parameter to be reviewed,
+Invoice Functionality,"Direct debit amount is  wrong
+Invoice job ended with errors","Exception Price list not applied
+","Correct the effective date in exception pricelist screen.
+Qualifying conditions needs to be reviewed","Data analysis to be done in PTD, Bill, RTD and RTE to be done"
+Invoice Functionality,"Direct debit amount is  wrong
+Invoice job ended with errors",Wrong price configured,,
+Invoice Functionality,"Direct debit amount is  wrong
+Invoice job ended with errors",Over charging of transactions,,
+Invoice Functionality,"Direct debit amount is  wrong
+Invoice job ended with errors",Invoice process not completed successfully,Server manager logs for pricing and invoicing needs to be analysed and corrective actions taken,
+Invoice Functionality,"Direct debit amount is  wrong
+Invoice job ended with errors",Pricing Process not completed successfully,,
+Invoice Functionality,"Direct debit amount is  wrong
+Invoice job ended with errors",Transactions rejected,Input transactions files/format needs to be validated,
+Invoice Functionality,Invoice Job failed,Invoice getting failed with last bill of the customer not closed or missing,Correct the last bill of the impacted customer,Analyse the invoice log
+Invoice Functionality,Invoice Job failed,Invoice getting failed with tax scheme details not found for the customer,Correct the tax scheme dates for the impacted customer,
+Invoice Functionality,Monthly Invoicing got stuck-XVAT,"Check CONS_INV_REQ_DETAILS table for status of invoicing.
+Check any customer with large number of transactions
+Check memory and diskspace - sufficient for reprocessing","Verify the inputs
+Verify if memory and diskspace are sufficient for reprocessing",
+Invoice Functionality,Error in On-demand Bill Processing- Page Size Not Available,"the error message says ""Failed to construct Kafka consumer"", can conclude that Kafka instance is not known to the Billing BP. Check nifi.properties file where . STREAMING_ATTRIBUTES.properties file was not properly included in the nifi.properties.",Check if any line break is there in nifi.properties file not allowing the value to set properly,Correct the properties
+Invoice Functionality,"Direct debit amount is  wrong
+Invoice job ended with errors",Duplicate Transactions processed,,
+Process Container,Process Container Not starting,Max memory configured not enough,Increase the max memory in the Jvm startup,Heap dump and thread dump analysis
+Process Container,Out of memory Error while restarting,High memory being utilized during PC restrart,"Analyse the reason for using more memory
+OR
+Increase the size of column if value too large issue reported",Analysing the memory lookups
+Process Container,Customercare service not available,customercare endpoint in parameters should be properly set. Refer cc endpoint in TBMS_INIT_PARAMETERS,Refer TBMS_INIT_PARAMETERS for customer care endpoint,Check if Customer screen is accessible in UI
+Process Container,TPE service failed to initialize-Failed to initialize service 'TBMS-TPE'.,"In the PC Console , in Data source Configuration  the validation query  given was wrong.It was given as  ""select from dual""
+OR
+DataSource Name was typed as ds","Updated the query as  ""select 1 from dual""  and restart PC
+Check if datasource name is typed as DS",Check if TPE service is initialized
+Process Container,"TPE not starting, in Initalized state only while PC auto installer
+",Value of parameter autostart as N in deploy.xml for TPE service.,"The value of this parameter should be Y for service in (deploy.xml) to autostart as part of PC start up. 
+
+<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
+
+<collector autostart=""Y"" name=""TBMS-TPE""> 
+
+<Listener className=""com.suntecgroup.tbms.tpe.core.server.ServerManager""/>
+
+ <!-- <Description>TPE ServerManager Logger</Description>-->
+
+ <Logger default=""N"" name=""ServerManager"" shared=""Y"">",Check if TPE service is initialized
+Process Container,PC Restart Failed,Value too large for change_log.cl node id column,"Analyse the reason for using more memory
+OR
+Increase the size of column if value too large issue reported",
+Process Container,"Saved Cluster name INSTANCE_8082 != configured name
+",Startup of TPE service fails with this error in the tbms_pc.log,"Cassandra startup issue
+Go to your PC\DataGrid folder. Delete the store folder there. Start Process Container again",
+Process Container,Error in Scheduler for PC restart,Time taken for PC restart has increased than the configured value in scheduler shell,"Analyse the reason for using more memory
+OR
+Increase the size of column if value too large issue reported",Analyse the counter size
+Balance Loading,"Invalid field length error while processing balance
+","1. The table BUSS_AGGR_SOURCE might have duplicate records I.e. having two records with same values for BAS_PROCESS_GROUP=’MAIN_FEED’
+ 2. The field delimiter parameter will be NULL in the config.properties file 
+3. The Total_field_count parameter in config.properties file will have different length than given in the feed file","1.Delete the two records and insert only one record with the help of exported query 
+
+2.update the field delimeter parameter with the correct value. Example , (comma) or | (pipe)
+
+ 3.give the total_field_count value same as provided in the feed file",Check balance processing status
+Balance Loading,"Balance feed not picked for processing in Nifi
+","1.Balance feed and markup file (.done) file is mandatory in Patches 2.4.26
+2.Markup file should have .done extension in small letters and not capital letters
+3.Make sure that the Balance Get file Process and Notify ConditionProcessor is up and running in Nifi","Verify done file , nifi is running",Balancefeed not picked for processing
+Balance Loading,XelerateDBCPConnectionPool Error found in the balance Processing flows,"The flow below the balanceGetFile flow will pop up an error called java.lan.nullpointer exception. Further in the nifi_app.log file there will be an error posted.
+The DB connection parameter will be invalid in the nifi.properties","Check the nifi properties file, a parameter called nifi.variable.registry.properties=./conf/config.properties,./billingConfig/BILLING_URL.properties,./billingConfig/STREAMING_ATTRIBUTES.properties In this parameter we removed the below values and saved.
+#removed nifi.variable.registry.properties=./conf/reconciliation_config.properties,./conf/db.properties",Check if balance processing flow successful
+Balance Loading,"Monthly Fall below fee charged wrongly eventhough the customer had met the last available balance criteria for that month	","Balance file might had zero balance/wrong data, which was sent from the bank team. Especially when the day falls on Bank holiday.	","Check the input balance file and see if the last available balance in the file has the actual customer last available balance	",Validation can be added after every balance loading to see if any customer segment-wise are having zero balances. This ensures proper balance loading.
+Balance Loading,"Balance loading fails after certain amount of data loaded into the system.	","NiFi heap size set in the Balance processor could have exceed due to the load in the server.	","Increase the Nifi Maximum heap size  and Reduce the concurrency of processor(Note: Reducing the concurrency might can increase the processing time) and try reloading it again.	",Check the NiFi logs and CPU/Memory utilization reports.
+Balance Loading,Job completed in very less time-Previous Balance Loading,All the balances for all the customers are not loaded in yearly table,Reload the balance after clearing the daily tables,Trend analysis with previous executions
+Wrong pricing,Less price than the expected,Exception Price list not applied,"Correct the effective date in exception pricelist screen.
+Qualifying conditions needs to be reviewed","Data analysis to be done in PTD, Bill, RTD and RTE to be done"
+Wrong pricing,Less price than the expected,Wrong price configured,,
+Wrong pricing,Less price than the expected,Over charging of transactions,,
+Wrong pricing,Less price than the expected,Invoice process not completed successfully,Server manager logs for pricing and invoicing needs to be analysed and corrective actions taken,
+Wrong pricing,Less price than the expected,Pricing Process not completed successfully,,
+Wrong pricing,Less price than the expected,Transactions rejected,Input transactions files/format needs to be validated,
+Wrong pricing,Less price than the expected,Duplicate Transactions processed,,
+Wrong pricing,Less price than the expected,Freelimit Issue,Correct the freelimit ; IF still not working check if clearing the counter_data helps,
+Wrong pricing,Less price than the expected,Records missing for consolidation,Reprocess the missing records,
+Wrong pricing,Repricing was not working.,"Error in job or all accounts on the 
+particular customer will be closed","Check whether any accounts are there in active 
+status for that customer",
+Wrong pricing,Account pticing- both services charged,"Check if One-to-one mapping is required for both service and event codes. After updating please restart the PC and continue testing .
+
+If same event code for both services, check if against each service a qualifier is configured for the standard rate so it is considering only one service .",Correct the configuration and proceed,Verify pricing is correct
+Wrong pricing,Less price than the expected,Fixed charge configured wrongly,Check the rate and correct as per business expectation,
+Maker Checker,Checker not able to view the records,Records missing for consolidation,Reprocess the missing records,"Log level Analyis
+Data level Analysis on MC tables"
+Maker Checker,Record getting saved without verification,New user added to the checker role,Refresh the TBMS profiles,
+Maker Checker,Record getting saved without verification,One Checker accepted the record so other checkers not able to view the record,Train the checkers on how the processing works,
+Maker Checker,Record getting saved without verification,Full Maker Checker Flow not complted,Code fix required,
+Maker Checker,Maker could not send the record for verification,WFM monitors not started,Restart the WFM,
+CDM,Customer loading was failed due to Sequence generation error.,means Sequence generation limit has exhausted for Sequence Name: SRQ_NO,Reset the sequence - ALTER SEQUENCE srq_no RESTART 100;  ,"1. Check whether the mapping of SRQ_No is available in client_seq_nos table.
+ 2.Analyze the ServerManager.logto identify the issue.
+ERROR: Failed to generate the sequence with sequence name: SRQ_NO | Error Context :-5152.003
+ERROR: Failed To Generate Sequence:-String Index Out Of range: - 31."
+CDM,Customer/Account Creation Error,License Issue,Apply the latest license,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,Customer/Account Creation Error,Performance issue,Fine tune the queries,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,"During the customer update,got the error as in service_request_errors table 
+""Cannot provide duplicate service entries in same date range.For the SERVICE [FBFEE].""",Duplicate Entries in Value_added_services table,"Remove the Duplicate entries from Value_added_services and value_added_services_stng by 
+updating SRQ_status to 1 in Service_request table and PROCESS_STATUS flag to I in 
+CUSTOMER_MASTER_STNG tablefor impacted cases. Run the Customer inbound job.
+Check Value_added_services and Value_added_services_stng table if deuplicate entries for customer.","Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,Customer/Account Creation Error,Sequence Issue,Reset the sequence,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,Customer/Account Creation Error,Product not active,Correct the configuration,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,Customer/Account Creation Error,Input data problem,Correct the configuration,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,"Account details are not getting loaded in to Staging table post Maria DB upgrade toVersion 10.6.11
+","Upgraded Maria Db version to 10.6.11. for DBS Project and encountered TimeStamp Format issue.
+Added - Mariadb 5.3 in java db mapping table
+insert into java_db_mapping (TYPE_ID,TYPE_NAME,JAVA_OBJECT_TYPE,JDBC_TYPE,DB_TYPE,MIN_LENGTH,MAX_LENGTH,SCALE) values (71,null,'Timestamp','TIMESTAMP','DATETIME /* MARIADB-5.3 */',null,null,null);",Correct the configuration,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,Account ownership changes failed-Record not processed from staging table,DB write failed error,Correct the configuration,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,Customer/Account Creation Error,Accounts not onboarding-Price to Account is not available-Identify th problematic product_service_mapping entry and correct it ,Correct the configuration,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,Account closure failure,Account Closure jar failing IO Error: The Network Adapter could not establish the connection – TBMS 4.3,Correct the configuration,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+CDM,Customer/Account Creation Error,Open date mismatch between Customer and Account,Correct the configuration,"Log level Analyis
+Oracle Reports
+Thread dump
+Data level analysis"
+Reports,Report not getting generated,Performance issue due to huge input volume,Fine tune the queries,"Oracle Reports
+Data level analysis
+Code level analysis"
+Reports,Wrong data in the report ,Input data problem,Correct the input data,"Oracle Reports
+Data level analysis
+Code level analysis"
+Reports,Minus symbol missing for negative amounts  in Report,Code level issue,Code fix required,"Oracle Reports
+Data level analysis
+Code level analysis"
+Reports,Wrong font in the report,Code level issue,,"Oracle Reports
+Data level analysis
+Code level analysis"
+Reports,Closed Account Number visible in reports,Code level issue,,"Oracle Reports
+Data level analysis
+Code level analysis"
+Reports,Performance Issue in generating the reports,"->Fetch query used for the report generation took too much time to compile
+->Thread count configured for the report generation was configured to 1
+->The data available in the tables which are used for the process was high
+","->F77Index are added to the tables where the query had too long time.
+->Thread count is configured to 5 for report generation.
+->Purging of the tables 
+","Oracle Reports
+Data level analysis
+Code level analysis"
+Reports,Duplicate data in reports,Code level issue,,"Oracle Reports
+Data level analysis
+Code level analysis"
+File Upload,File upload not working,File upload service may be down,Restart the Fileupload service,Log analysis
+File Upload,"Special characters are not posting to DB after the processing of files
+",Special characters are replaced with junk characters in DB,"->Verify whether the UTF-8 encoding Java parameter is set in run.sh inside the process container bin
+->In the case of file processing switches, C81IFD_CHARACTER_SET in the input file definition should be UTF-8.
+",
+File Upload," Uploaded file rejected  with error ""Account not associated with the Product""",Product switiching has happend,"For updating the exceptions through UI, Always take the latest account data as feed for file.",
+File Upload,Input file getting rejected,Input file not in sync with fileupload template,Correct the input data,Data analysis in the input feed
+Pricing ,High CPU Utilization and memory utilization,Data analysis mainly the hierarchy related configurfations if the issue is observed in specific runs,Correct the data ,Data analysis in the input feed
+Pricing ,Transaction records not included for pricing,Check the transaction table if records are loaded. Check pricing log if any rejections due to configuration.,Verify and correct the data and reload the transactions,Data analysis
+Pricing ,Slowness in Pricing process,Threading logic to process the pricing may not be correct,Check the number of records assigned to each thread and the number of threads configured against the control configuration are in sink,Check the values configured against the control and the thread allocation logic
+Pricing ,Account Waiver not applied and charged with price,"Waiver is not added for the account at the specific time
+Waiver added before creating the account or customer and hence after customer/account creation waiver won't be there",Ensure waiver file is executed only after customer/Account creation,Check Waiver date applied and customer/account entry date and open date and it shoulb be before the waiver date
+Pricing ,Recurring charge not priced,"Verify in XTP_NONUSG_CHRGS_PLAN to check whether records are available and NCP_TO_DATE is not null
+Verify TARIFF VARIATION TV_TO_DATE for the respective charges",Verify the charges and correct if required,Verify the pricing output
+Pricing ,,,,
+Pricing ,"Qualifiers with string parameter value not getting resolved
+","Charges with Qualifier Variation which has String Paramaters like (Acc ID,Category Code,etc) not getting resolved and Txn record getting rejected, though the variations are satisifed. In log error appers as 'NumericOperators.toDouble() | Input value does not contain a parsable double : Input value :HDFC'. Number precision is getting checked for a Qualifier attribute that has a string value","While creating Qualifier definition make sure that for String Parameters like Cust ID,Category Code, Acc ID or any custom string attributes, the operator selected in 'Same as' instead of 'Equal to'. 'Equal to' Operator is to be used only for Numeric and Date parameters like Age,Number fields 1,2, .. Date fields,etc",Verify if qualifier is resolved
+Pricing ,Records not posted to GTD but posted to PTD,"GST is exempted
+Branch came in the input file is missing in DB table and while validation, system will fails to proceed",Verify new Branch codes  has been entered in to the table before each month's transaction proceessing,"Either there will be rejection to RTE table
+If rejection is not written, debug log required to analyze the flow "
+Pricing ,"In X2.6 transaction pricing, BE integrity check violation error is thrown for few records.	","When multiple threads processing the transactions of same account and tried to insert into a table(which has a unique constraint), when a record was already present in the system that leads to BE148_BUKCONSTRAINT issue.	","Code fix required.	",Check the Business container debug logs for any erros.
+Pricing ,Closed Customers are getting priced.,"In DBS,Whenever the Merchant account gets closed(MCP), in VALUE_ADDED_SERVICES table,
+VAS_CLOSE_DATE is not updated and also in XTP_nonusg_chrges_plan,NCP_TO_DATE is not updated and hence getting Priced during Yearly Pricing Job Execution.","Created a trigger to update the vas and NCP after account update job.
+1)Update the VAS_close_date as account close_date and VAS_Status as B.
+2)Update the NCP_TO_DATE and NCP_CLOSING_DATE as account close_date.","1.Check the Account Master table data for the issue accounts for closure flag and date.
+2.Check Closure date and flags were updated properly.
+3.Check the Value_added_Service table to verify VAS_STATUS and VAS_CLOSE_DATE coulmns to confirm any closure values.VAS_STAUS was A and there was no value for VAS_CLOSE_DATE.
+4.Check XTP_nonusg_chrges_plan table to verify NCP_TO_DATE value updated as account closure date.NCP_TO_DATE was not having any date"
+Pricing ,Slowness in Pricing process,Check the table level and Index level INIT TRANS configurations,INIT TRANS of table should be equal to the number of threads and for Index it should be double the value,"Table level values can be checked in USER_TABLES
+Index level details from USER_INDEXES(For Oracle DB)"
+Billing Threading,Processing thread is not as same as the NUM_THREDS configuration,Verify the values configured against the parameters  in NUM_THREADS(parameter_control table)  and in MAX_SESSION_COUNT(SCHEDULE_BILL.INI),"For the billing process thread, the number of threads should be configured both in NUM_THREADS(parameter_control table)  and in MAX_SESSION_COUNT(SCHEDULE_BILL.INI) . Then only, the process run in the configured thread.",Configuration analysis of the parameters
+Billing Threading,Thread values are not configured ,Verify the values configured against the parameters  in NUM_THREADS(parameter_control table)  and in MAX_SESSION_COUNT(SCHEDULE_BILL.INI),"For the billing process thread, the number of threads should be configured both in NUM_THREADS(parameter_control table)  and in MAX_SESSION_COUNT(SCHEDULE_BILL.INI) . Then only, the process run in the configured thread.",Configuration analysis of the parameters
+Repricing,Rate charged is wrong,Refresh not happened in the case of any memory lookups,Verify the rate configurations,"Data analysis to be done in PTD, Bill, RTD and RTE to be done"
+Repricing,Transaction not included in the invoice,Repricing criteria not created,Verify the criteria created for the customer/account,"Data analysis to be done in PTD, Bill, RTD and RTE to be done"
+Repricing,Transaction not included in the invoice,Rate change happened after the billing (if the repricing is applicable for unbilled transactions),Verify the audits when the rate change happened,"Data analysis to be done in PTD, Bill, RTD and RTE to be done"
+Repricing,Transaction not included in the invoice,Repriced records not updated correctly ,Verify the input transactions and compare with the priced records,"Data analysis to be done in PTD, Bill, RTD and RTE to be done"
+UI level Issues,CAPL - Details fetched is not of the searched customer/account,Code level issue,Check code level for any issue in data clearing of previous search,Code level analysis
+UI level Issues,Duplicate service codes error in account creation,Library/Reference data level issues,"Check the service configuration at Product /Offer level , whether any duplicate data exists",Reference data level verifications using databse queries
+UI level Issues,Invalid Staff Id Error,Parameter Configuration,Check TBMS_INIT_PARAMETERS table TIP_KEY MANUAL_INVOICE_SERVICE_URL ,Check TBMS_INIT_PARAMETERS table TIP_KEY MANUAL_INVOICE_SERVICE_URL which was pointing to different URL instead of Proper Jboss URL
+UI level Issues,Currently Customer Care Services are not available Error,Parameter Configuration,Check TBMS_INIT_PARAMETER table TIP_KEY TPE_CC_WS_ENDPOINT  ,Check TBMS_INIT_PARAMETER table column TPE_CC_WS_ENDPOINT pointing to proper URL 
+UI level Issues,Error in offer edit,Atleast one definition is mapped as standard entity,Check the TV_STANDARD_YN for the services and offer/product combination. There should be only one record with value Y for a service.,
+UI level Issues,Error in offer edit,Invalid Tariff type,Check the tariff type configured at TARIFF_BAND_CODES and PRODUCT_SERVICE_CHARGES,
+UI level Issues,"Record Locked - error is shown while taking a record in edit mode using Xelerate UI. Whenever a user opens a record to edit using Xelerate UI, an entry is created in TBMS_RECORD_LOCKER screen. When another user opens same record for edit, a message will be shown that the record is locked","1. Some other user is currently editing that record
+2. A previous session in which this record was editing is not properly ended. As a result, the table TBMS_RECORD_LOCKER still have an entry for this record
+","If you are sure that no other user in actually editing this record, delete the entry corresponding to this record from the table",Verify if UI is accessible
+UI level Issues,"The creation restricts legacy billing code with special characters. 
+",Regular expression configured at the screen profile level can restrict the characters.,Check the profile for regular expression property and modify.,
+UI level Issues,"Error thrown like ""Record already present"", while creating new user",User id with same name already created by another user,Remove the entry from the xelerate_data table,
+UI level Issues,Edit access not available for certain security IDs,Verify the TBMS_PROFILE_SECURITY Configuration,Add/Modify the value of Edit (TPS_EDIT),
+UI level Issues,"After spring related jars upgrade, unable to access the application login page using proxy url
+",Content-length exceeded a partcular byte-size say 6000-8000 bytes causes the issue,transafer-encoding header is added by modifying the standalone-full-ha.xml in JBoss to resolve the issue,
+UI level Issues,Error in offer edit,Consolidation Frequency is not applicable for recurriing charge,Check the values mapped for recurring service in CCUA.,
+UI level Issues,Offer screen issue while saving,From date & To date issue,To date of old rate variation and From date of new rate variation is same. Date overlapping issue,"From Offer scrren, Configuration setup"
+UI level Issues,Offer is not getting saved in Xelerate UI after modification,multiple rate definition for same Rate variation,Check Rate definition screen in UI and if multiple rate definition with same configuration exists then remove duplicate entry,"By querying Tariff_variation, Tariff_Call_Scheme & Tariff_call_rates tables"
+UI level Issues,Error as Overlapping Period for Offer,Multiple rate variation with same qualifier priority,Qualifier priority to be changed in Tariff_Variation table,"From Offer scrren, Configuration setup"
+UI level Issues,Application Error Occurred,"While trying to save offer with entry condition in freelimit, it is throwing 'Application error occurred'
+
+Refer code - Code level issue
+
+",Code level analysis,
+UI level Issues,Currency Exchange Rate screen - Given period is not contiguous,"2 options - either keep the old entry open ended, 2 - close the old entry with current date and open a new entry from tomorrow's date","2 options - either keep the old entry open ended, 2 - close the old entry with current date and open a new entry from tomorrow's date",Check if you are able to edit or create in CER screen
+UI level Issues,"Error as ""Overlaping period""",Manual Insert of duplicate Rate part,Database and code level analysis,"By querying Tariff_call_rates, duplicate entries against a rate can be seen"
+UI level Issues,User not able to login - Password encryption/decryption key mismatch,"1. JDK version mismatch
+2. Change in bcprov jdk jar version","Verify the jdk version 
+Verify if any changes happened to bcprov jar - check using jarsigner command ",
+UI level Issues,Unser not able to login-showing maximum number of active users exceeded,Maxium allowed users are currently logged in or  currently active in the system,Delete the entry from the tbms_user_profile where the users login time is more than 2 days of system date,By quering the count  from  tbms_user_profile with active users logged in more than 2 days 
+UI level Issues,User not able to login to XGST UI,User is not able to login with AD credentials to XGST in LDAP authenticated environment.,Login credentials configured for the user in XGST environment was not matching with that available in AD directory.,
+Output Extract (Outbound Reports/Extracts),Expected data not present in extract,Mapping Issue/Code level issue,Analyse the respective / relevant tables related to the reports/extracts to identify the point in which it is failing,
+Output Extract (Outbound Reports/Extracts),Mandatory values expected at downstream systems are not available in our report,Mapping Issue/Code level issue/Exceptional cases - data expectation is different (For example UOB GST transition month issue),Analyse the respective / relevant tables related to the reports/extracts to identify the point in which it is failing,
+Output Extract (Outbound Reports/Extracts),Duplicate data in extract/reports,Rerunning the old data / migration issue /data level mapping issue,Analyse the respective / relevant tables related to the reports/extracts to identify the point in which it is failing,
+Output Extract (Outbound Reports/Extracts),"Statement file got generated without the proper customer data. Few customers had zero earnings in the file eventhough the customer had earnings > 0 in that statement cycle	","Statement for that cycle might have been already generated	","Check if any intermediate table gets updated with the last statement generated cycle date for a customer, If yes, then revert back the date to previous cycle end date and try generating again.	",Verification can be built to validate the statement file before posting and ensures there are no zero earnings.
+NIFI,"After deploying the Billing template in nifi, Nifi throws an error like"" Failed to construct kafka consumer""",Wrong configuration in Nifi Properties file,"Check  and correct nifi.variable.registry.properties=./billingConfig/BILLING_URL.properties,./billingConfig/S TREAMING_ATTRIBUTES.properties in nifi properties file",Verify the Nifi Property configurations
+NIFI,Error 405 HTTP method post is not supported by this URL,wrong basepath and portnumber from nifi variable,Verify the portnumber and basepath in nifi properties,
+NIFI,Error in NiFi instance. Please check the template with the same name is already in NiFi,"In the <<BPRuntime>>\etc\application.properties file, NiFi URL is given wrongly. Only the system name and port is expected for the parameter nifi.instance.url
+For example,  nifi.instance.url=http://sbstpvmlx403:8100
+But it was given as nifi.instance.url=http://sdschwsvm0235:8100/nifi
+​",Correct the NiFi URL in BPRuntime properties file,Verify NIFI startup successful
+NIFI,Unresolved address-Nifi Startup error,"In the nifi.properties, wrong system name was given for the property nifi.web.http.host",Give correct value (hostname),Verify NIFI startup successful
+NIFI,"BP Deployment failed due to error in instantiating the template
+",nifi-suntecgroup-nar.nar file from <<RELEASE>>\XELERATE2.6/SERVICES/X3Services/Nifi folder is not copied to NiFi\lib folder,Copy the .NAR files from release to NiFi\lib folder,Verify if template deployment in successful
+NIFI,Balance job was not working.Taking Bill Module instead of Balance Module,Shell Script Wrong Module ID ,Check shells related to NIFI ,"In set_env.sh shell,NIFI Module ID was hardcoded as BILL.Whenever BALANCE Job is executing,MODULE ID was printed as BILL.Commented the same."
+NIFI,NIFI command window closing automatically,"The port say, 8100 used for NiFi is already listening to a task which was running earlier and not stopped yet.","USe command-> netstat -ano | findstr :8100
+This will give the task number which is listening the port.
+Then execute command to kill the task
+ taskkill /PID <task number> /F
+Restart NiFi",Check if NIFI window is closed automatically
+NIFI,"Error in BP Flow in Nifi Console 
+When we start the BP Flow from Nifi console and try to process, then error ‘Invalid Session ID’ will be thrown. ",BP Flow must be started from Admin console to get the session id generated. If BP flow is not started from admin console and try to process above said error is thrown. ,"Check whether the BP is started in Admin console and Nifi Console. If started in Nifi alone, stop the BP from Nifi Console and start it from Admin Console.",Check any errors 
+NIFI,"While processing transactions in X2.6 environment an error coming in BP_ERROR_LOG table as ""API Timeout exceeded, errorType:OTHERS""",The Read Timeout for the BP in NiFi is 330 sec by default,"Increase the Read Time Out to 600 sec.
+For that stop that corresponding template (eg:FenericTransactionInterfact_v1)
+Double click the template
+Right click and go to properties tab
+Increase the time out to 600 sec and click ok.
+Start template again",Verify if any errors in nifi log
+NIFI,"Balance loading through nifi is happening manually, but with automation tools like control M , Nifi is not getting started",Permission issue to nifi folders and libraries,"Give necesseary permission to nifi for the control M user, and also add library parameter 
+export LD_LIBRARY_PATH=/usr/lib64:$LD_LIBRARY_PATH",We need to debug the call.functions.sh shell and understand that the connection to nifi is passed on
+NIFI,"NiFi queue is not reducing and no data entering to the output table.	","Check if kafka is up and the processor is started and in running state using Admin console.
+
+Check if the disk space in the server is full.	","Restart the Kafka and Restart the processor in Admin console.
+
+Clear unwanted logs,if any.	","Verify if any errors in nifi log and Verify if the processor is up and running in the Admin console.
+					"
+NIFI,Error in Nifi while doing pricing through RESTAPI - Account ID or Account Number is not applicable as on transaction,"The transaction date  entered is the date before the account activation date.
+
+",Verify the input passed for rest api,Input data verification
+Kafka,During Initial starting zookeeper running properly but kafka shutting down.,The server.properties file for kafka is not configured with correct machine name,"Configure the correct machine against the property  advertised.listeners=PLAINTEXT://sbstjwsvmxxxx:9092
+It should be in the format PLAINTEXT://your.host.name:9092",Verify properties file configurations of kafka
+Kafka,Huge amount of logs getting accumulated for consolidation purpose,Check the topic which is writing huge amount of data and if it is expected behaviour,Change the log retention hours and clean up policy in Kafka properties file.,Verify log size comparatively
+Kafka,Kafka Startup Error,Error creating broker listeners from 'PLAINTEXT:sbstjwsvmxxxx:9092': Unable to parse PLAINTEXT:sbstjwsvm0802:9092 to a broker endpoint,"The value of the parameter advertised.listeners in Kafka's server.properties file was set incorrectly
+It should be in the format PLAINTEXT://your.host.name:9092
+In this error scenario, as shown in the error message, the slashes (//) were missing the configuration",Verify Kafka startup
+Kafka,You get this error in kafka console 1 larger than available broker.,"Zookeeper is not started.
+", Start zookeeper and then start Kafka to solve the error.,
+Kafka,"Error thrown in from Kafka Command window as ""Unable to resolve address"" ","Verify the zookeeper.connect.
+advertised.listeners values in server.properties file","Give in the server.properties file the following configuration parameter values, the correct server name where the zookeeper/kafka is deployed.","Verfiy the server.propeties
+Set the following broker configurations ( In config/server.properties file)
+broker.id  : (This is the id of the broker in a cluster, must be unique for each broker).
+listeners:  set it to = PLAINTEXT://your.host.name:port
+eg: PLAINTEXT://localhost:9091
+This broker will listen port 9091 for connection requests, same has to be specified in container property file also
+log.dirs:  set with the directory path that we created in step 2
+zookeeper. connect : Set the Zookeeper address.
+Eg: zookeeper.connect=localhost:2187
+If Zookeeper is clustered cluster, then give the address as a comma-separated list, i.e.:localhost:2181,localhost:2182.
+Similarly setup the other brokers also using unique broker.id and different listeners port(if all instances are in the same machine)."
+Kafka,"While starting Zookeeper on Windows (VDI), below error message is shown in the command prompt:
+The input line is too long. The syntax of the command is incorrect kafka","Folder path name where Kafka is stored seems too long for Windows to handle. Detailed explanation available at https://stackoverflow.com/questions/48834927/the-input-line-is-too-long-when-starting-kafka
+
+","Rename the Kafka folder to a shorter name (for example, rename from kafka-2.12.-2.6.0 to kafka) OR move kafka folder upwards in the folder structure (move from C:\myfolder\Xelerate\kafka-2.12.-2.6.0 to C:\kafka)",Verify the kafka folder details
+XGST_Taxation,Exempted transactions are not populating in GSTR-1 HSN Summary Section,"In GST_EXEMPTED_TRANSACTIONS check whether the GET_HSN_SAC Column is having the HSN/SAC code. While processing the exempted transactions HSN/SAC code needs to be provided only then the same will get posted to the database and will be correctly reported in the HSN summary section of GSTR-1.
+Also two parameters is not Y in TBMS_INIT_PARAMETERS table.GSTR1_HSN_SUMMARY_INCL_TAXABLE_VALUE_EXMPT_YNGSTR1_HSN_SUMMARY_INCL_EXMPT_NIL_NGST_YN
+","Ensure the system parameters are set as Y and restart PC to take effect.
+Also check GST_EXEMPTED_TRANSACTIONS .
+Make them populate in GSTR-1 HSN Summary section backout the transaction and reprocess with HSN code and regenerate the GSTR-1
+",Verify the summary section
+XGST_Taxation,IRN and QR code not getting updated in transactions,"Check for GES_STATUS IN GST_EINVOICE_STNG table 
+Check IRN_SERVICE is up and running","Check the tables GSTR_SERVICE_LOG and GSTR_SERVICE_LOCK whether any entry is available for the state code and return period for which return is being generated
+If there is any entry in the table GSTR_SERVICE_LOG table with status IP then chnage the status to P and clear the entry from GSTR_SERVICE_LOCK table
+",
+XGST_Taxation,GSTIN Maintenance Issue - Memory refresh not happened for all nodes,"Working for Single GSTIN but not working for bulk file.
+Issue in GSTR service while bulk API call.
+","Service restart for the node to reiniate
+After restart file was processed with 361140 No response- To raise the issue with cygnet.
+Proceed to generate the file in offline mode.
+",Verify if file generated
+XGST_Taxation,Exempt File upload error,GSTIN is not created or not provided the GSTIN while processing the transaction,check whether the GSTIN number provided in the exempt file is available in GSTIN master table GST_CUSTOMER_GSTIN. If it is available please check the from date in the table and compare with the transaction date in exempt file. Also confirm there are no typo errors in the GSTIN number provided in the input.,Check the transactions and verify GSTIN is provided.
+XGST_Taxation,Bulk invoice slowness in centralized invoice,"Need to check the index, To check during running select query it is referring correct index or not","Verify the index part, AWR report, query plan",Need to check the index it is mapped to correct index or not
+XGST_Taxation,Bulk Invoice generation ,Bulk invoices are unable to generate  in UI,"In Batch report service configuration file ,change BULK_UPLOAD_PARALLEL_PROCESSING  flag from 'N' to' Y' and restart the Process container",
+XGST_Taxation,Invoice not received via auto scheduler,"invoicing date need to check, transaction available particular date range and customer daya",Customer data and transaction should be available,"Verify logs, status of gstcs_inv_request table"
+XVAT_VATReturns,UAE : Annual Washup Adjustment values not populating in returns even after the execution of Washup Switches,"Ensure washup switches 360087 AND 360088 are exwcuted 
+Verify whether Washup has been completed successfully and  entries have been posted in required tables:","
+
+There will be no entry in VAT_WASHUP_FILING_SCHEDULE for the required preiod due to which the value is not populated in returns. 
+Insert an entry manually  with required details to VAT_WASHUP_FILING_SCHEDULE and then proceed with the washup execution again.
+. Insert Into VAT_WASHUP_FILING_SCHEDULE with status as null and then run the washup switches
+2. Once washup is completed generate returns, vwfs_status will be updates as T , if its Considered in returns
+3. Once return is marked final then vwfs_status will be updated as A.",Verify if washup is completed
+XVAT_VATReturns,Online VAT Inquiry Error Report - Validation Error,"Check data is available in the GST_TAX_DETAILS  tables for the given condition GTD_STATUS 0 and GTD_REQUEST_TYPE E
+
+Check the logs for any DB Connectivity Issues:
+./logs/ASYNC_REPORT_SERVICE.log",Check GST_TAX_DETAILS and DB connectivity issues,Verify Report
+XVAT_VATReturns,Missing Transactions in Core while invoking VAT Accounting API  ,"Identify the status of transactions by checking GTD_EXTRACTED_YN flag in GST_TAX_DETAILS table
+Eligible transactions not available in VAT_ACCOUNTING_API_REQUEST table if GTD_EXTRACTED_YN flag is NULL",Invoke VAT_ACCOUNTING_API in reprocessing mode ,Verify the transactions 
+Online,Invoice approval API in DD_REQUEST - performance issue. Api taking 30-40 secs to return the response,"Haproxy routing might be wrong.
+If Jboss and 2.7 container is in different server, the communication between those two servers might be making delay.
+Index and where condition columns used might not be correct.","Install the 2.7 container and Jboss in same machine was recommended, This will reduce the lag between server to server. Configure the haproxy to route the APIs which are using UI port to Jboss server. ",Check whether the haproxy is routing the API call to correct port and container. Check the index and where condition used in the internal query. High volume of data in DD_REQUEST
+Online,"Online redemption is taking more time than usual and which results in timeout in the client server.	","Check if any query takes more time.	","Do proper indexing in the respective tables to increase the performance.	","Get the AWR,ASH,ADDM reports to check for any long running queries.
+					"
+Products and Services,changing the STD product level pricing will automatically update all the child products,"If we are adding new service / new charge code to STD product then this will be inherited to all the child products.
+But if we are closing the current rate variation and adding new rate variation, this change will not be inherited to all the child products.",Clsoe the current rate and add new rate variation,Verify the product pricing and rate variations
+Miscellaneous,"DB installation error, with oracle error SP2-0306: Invalid option Usage: 
+CONN[ECT] [{logon|/|proxy) [AS {SYSDBA|SYSOPER| SYSASM|SYSBACKUP|SYSDG SYSKM}] [edition
+SP2-0640: Not connected ",Network issue of Database.,Verify the network connection are strong,Verify any issue in network connection 
+UI level Issues,Unable to add charge code in service edit screen,nonEditable field in the service.xml will be having value as U,"change the nonEditable=""U"" to nonEditable="""" 
+
+
+
+",Use the internal global compare tool and extract the profiles to check whether the fields are disabled
+Kafka,Getting duplicates in the account cycle date table,If kafka has multiple partition and the solution switch batch is >1 then there could be possibility that two thread processing same account from different partition of kafka.,Change the kafka partition key as account id based key,Backtrack the Servermanager and tbms_pc logs to check how the threads fetching the data from each partitions
+CDM,Account closure APIs time stamp issue,Check whether the 2.7 container is implemented with 12hrs logic or 24 hrs,Suggest client to use the 12hrs clock with mentioning AM and PM accordingly,Have a discussion with technical team to get the code details.
+Invoice Functionality,Invoice generation might fail with subquery returning more than two rows error,"Check the cycle date tables, custacc_pers_freq_details and dd_process_defn tables have two entries with same cycle date",Need to redesign the invoice generation view to handle duplicates in dd_process_defn,Verify the tables associated with the view for a particular account throwing the error

@@ -97,17 +97,18 @@
     <div id="chat-container">
         <div id="chat-box"></div>
         <form id="chat-form">
-            <input type="text" id="user-input" placeholder="Message AI Support Agent..." required>
+            <input type="text" id="user-input" placeholder="Describe your issue..." required>
             <button type="submit" id="send-button">Send</button>
         </form>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let selectedCategory = "";
-            let selectedSymptom = "";
+            let previousDescriptions = [];
             let rejectedCategories = [];
+            let selectedCategory = "";
             let currentStep = "categorySelection";
+            let refinementCount = 0;  
 
             document.getElementById("chat-form").addEventListener("submit", async function (event) {
                 event.preventDefault();
@@ -118,106 +119,13 @@
                 document.getElementById("user-input").value = "";
 
                 if (currentStep === "categorySelection") {
-                    await fetchCategory(userMessage, rejectedCategories);
+                    await fetchCategory(userMessage);
+                } else if (currentStep === "eliminateCategory") {
+                    handleCategoryElimination(userMessage);
                 } else if (currentStep === "confirmCategory") {
                     handleCategoryConfirmation(userMessage);
-                } else if (currentStep === "selectSymptom") {
-                    handleSymptomSelection(userMessage);
                 }
             });
-
-            async function fetchCategory(userMessage, rejectedCategories) {
-                try {
-                    const response = await fetch("/api/categorize", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ user_description: userMessage, rejected_categories: rejectedCategories })
-                    });
-
-                    if (!response.ok) throw new Error("Server error");
-
-                    const data = await response.json();
-                    selectedCategory = data.matched_category;
-
-                    addMessage(`Your issue seems to belong to: **${selectedCategory}**. Do you confirm? (Y/N)`, "bot");
-
-                    currentStep = "confirmCategory";
-                    document.getElementById("user-input").setAttribute("placeholder", "Enter Y or N...");
-                } catch (error) {
-                    console.error("Error:", error);
-                    addMessage("Error processing request.", "bot");
-                }
-            }
-
-            function handleCategoryConfirmation(userInput) {
-                userInput = userInput.toUpperCase();
-                
-                if (userInput === "Y") {
-                    addMessage(`You confirmed: ${selectedCategory}`, "user");
-                    fetchSymptoms(selectedCategory);
-                } else if (userInput === "N") {
-                    rejectedCategories.push(selectedCategory);
-                    addMessage("Looking for the next best match...", "bot");
-                    fetchCategory(selectedCategory, rejectedCategories);
-                } else {
-                    addMessage("Invalid input. Please enter Y or N.", "bot");
-                }
-            }
-
-            async function fetchSymptoms(category) {
-                try {
-                    const response = await fetch(`/api/symptoms?category=${encodeURIComponent(category)}`);
-                    if (!response.ok) throw new Error("Server error");
-
-                    const data = await response.json();
-                    let symptomList = `<div class='message bot'>Here are the common symptoms for **${category}**. Type the number of the symptom that is the closest match to your symptom or describe further:<br>`;
-                    
-                    data.symptoms.forEach((symptom, index) => {
-                        symptomList += `${index + 1}. ${symptom}<br>`;
-                    });
-                    symptomList += `</div>`;
-
-                    addMessage(symptomList, "bot");
-
-                    currentStep = "selectSymptom";
-                    document.getElementById("user-input").setAttribute("placeholder", "Enter symptom number or describe further...");
-                } catch (error) {
-                    console.error("Error:", error);
-                    addMessage("Error fetching symptoms.", "bot");
-                }
-            }
-
-            function handleSymptomSelection(userInput) {
-                if (/^\d+$/.test(userInput)) {
-                    let index = parseInt(userInput) - 1;
-                    selectedSymptom = data.symptoms[index]; // Store selected symptom
-                    addMessage(`You selected: ${selectedSymptom}`, "user");
-                    fetchCauses(selectedSymptom);
-                } else {
-                    addMessage(`You refined symptom: ${userInput}`, "user");
-                    fetchCauses(userInput); // Treat as user-defined symptom
-                }
-            }
-
-            async function fetchCauses(symptom) {
-                try {
-                    const response = await fetch(`/api/causes?symptom=${encodeURIComponent(symptom)}`);
-                    if (!response.ok) throw new Error("Server error");
-
-                    const data = await response.json();
-                    let causesList = `<div class='message bot'>Possible causes for **${symptom}**:<br>`;
-                    
-                    data.possibleCauses.forEach((cause, index) => {
-                        causesList += `${index + 1}. ${cause}<br>`;
-                    });
-                    causesList += `</div>`;
-
-                    addMessage(causesList, "bot");
-                } catch (error) {
-                    console.error("Error:", error);
-                    addMessage("Error fetching causes.", "bot");
-                }
-            }
 
             function addMessage(text, role) {
                 const chatBox = document.getElementById("chat-box");
@@ -227,7 +135,50 @@
                 chatBox.appendChild(messageDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
+
+            async function fetchCategory(userMessage) {
+                try {
+                    const response = await fetch("/api/categorize", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            user_description: userMessage,
+                            previous_descriptions: previousDescriptions,
+                            rejected_categories: rejectedCategories
+                        })
+                    });
+
+                    if (!response.ok) throw new Error("Server error");
+
+                    const data = await response.json();
+
+                    if (data.final_category) {
+                        selectedCategory = data.final_category;
+                        addMessage(`Based on my analysis, it looks like the category of the issue is **${selectedCategory}**. Do you confirm? (Y/N)`, "bot");
+                        currentStep = "confirmCategory";
+                        return;
+                    }
+
+                    refinementCount++;
+                    previousDescriptions.push(userMessage);
+
+                    if (refinementCount >= 5) {
+                        selectedCategory = data.suggestions[0].category;
+                        addMessage(`I've refined the issue enough. The most likely category is **${selectedCategory}**. Do you confirm? (Y/N)`, "bot");
+                        currentStep = "confirmCategory";
+                        return;
+                    }
+
+                    let categoryOptions = data.suggestions.map(s => `- **${s.category}**: ${s.explanation}`).join("<br>");
+                    addMessage(`Possible categories:<br>${categoryOptions}`, "bot");
+                    addMessage(data.follow_up_question, "bot");
+                } catch (error) {
+                    console.error("❌ Error fetching category:", error);
+                    addMessage("Error processing request. Please try again.", "bot");
+                }
+            }
         });
-    </script>
+
+    </script>    
 </body>
 </html>
